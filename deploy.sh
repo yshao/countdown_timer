@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Quick Deployment Script for Countdown Timer
-# Usage: ./deploy.sh [docker|heroku|railway]
+# Usage: ./deploy.sh [docker|heroku|railway|vercel]
 
 set -e
 
@@ -145,15 +145,57 @@ case "$DEPLOY_METHOD" in
         railway open
         ;;
 
+    vercel)
+        echo "🔺 Deploying to Vercel..."
+        echo ""
+
+        # Check if Vercel CLI is installed
+        if ! command -v vercel &> /dev/null; then
+            echo "❌ Vercel CLI is not installed."
+            echo "   Install: npm install -g vercel"
+            exit 1
+        fi
+
+        # Check if logged in
+        if ! vercel whoami &> /dev/null; then
+            echo "🔐 Please login to Vercel:"
+            vercel login
+        fi
+
+        echo "📝 Environment Variables Setup"
+        echo ""
+        echo "After deployment, add these in Vercel Dashboard:"
+        echo "  SECRET_KEY: $(generate_secret)"
+        echo "  JWT_SECRET_KEY: $(generate_secret)"
+        echo "  FLASK_ENV: production"
+        echo ""
+
+        read -p "Press Enter to continue with deployment..."
+
+        echo ""
+        echo "Deploying to Vercel..."
+        vercel --prod
+
+        echo ""
+        echo "✅ Deployment complete!"
+        echo ""
+        echo "📝 Important: Set environment variables in Vercel Dashboard"
+        echo "   1. Go to https://vercel.com/dashboard"
+        echo "   2. Select your project → Settings → Environment Variables"
+        echo "   3. Add SECRET_KEY, JWT_SECRET_KEY, and FLASK_ENV"
+        echo "   4. Redeploy: vercel --prod"
+        ;;
+
     *)
         echo "❌ Unknown deployment method: $DEPLOY_METHOD"
         echo ""
-        echo "Usage: $0 [docker|heroku|railway]"
+        echo "Usage: $0 [docker|heroku|railway|vercel]"
         echo ""
         echo "Examples:"
         echo "  $0 docker    # Deploy with Docker"
         echo "  $0 heroku    # Deploy to Heroku"
         echo "  $0 railway   # Deploy to Railway"
+        echo "  $0 vercel    # Deploy to Vercel"
         exit 1
         ;;
 esac

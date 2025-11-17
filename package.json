@@ -1,0 +1,23 @@
+{
+  "name": "countdown-timer-saas",
+  "version": "1.0.0",
+  "description": "SaaS Countdown Timer with Supabase Auth and Stripe Payments",
+  "scripts": {
+    "dev": "python backend/app.py",
+    "test": "node run-tests.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "@stripe/stripe-js": "^2.4.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "timer",
+    "countdown",
+    "saas",
+    "stripe",
+    "supabase"
+  ],
+  "author": "",
+  "license": "MIT"
+}

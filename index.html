@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Countdown Timer with Voice</title>
+    <title>Countdown Timer SaaS - Professional Timer with Subscriptions</title>
     <link rel="stylesheet" href="styles.css">
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <!-- Authentication Header -->
@@ -107,11 +110,11 @@
     <div id="login-modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="auth.closeModals()">&times;</span>
-            <h2>Login</h2>
+            <h2>Login to Your Account</h2>
             <form id="login-form" onsubmit="auth.handleLogin(event)">
                 <div class="form-group">
-                    <label for="login-username">Username</label>
-                    <input type="text" id="login-username" required minlength="3">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
                 </div>
                 <div class="form-group">
                     <label for="login-password">Password</label>
@@ -120,6 +123,7 @@
                 <div id="login-error" class="error-message"></div>
                 <button type="submit" class="btn btn-primary">Login</button>
             </form>
+            <p class="modal-footer">Don't have an account? <a href="#" onclick="auth.closeModals(); auth.showRegisterModal(); return false;">Register here</a></p>
         </div>
     </div>
 
@@ -127,7 +131,7 @@
     <div id="register-modal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="auth.closeModals()">&times;</span>
-            <h2>Register</h2>
+            <h2>Create Your Account</h2>
             <form id="register-form" onsubmit="auth.handleRegister(event)">
                 <div class="form-group">
                     <label for="register-username">Username</label>
@@ -144,13 +148,15 @@
                     <small>At least 6 characters</small>
                 </div>
                 <div id="register-error" class="error-message"></div>
-                <button type="submit" class="btn btn-primary">Register</button>
+                <button type="submit" class="btn btn-primary">Create Account</button>
             </form>
+            <p class="modal-footer">Already have an account? <a href="#" onclick="auth.closeModals(); auth.showLoginModal(); return false;">Login here</a></p>
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="timer.js"></script>
-    <script src="auth.js"></script>
+    <script src="supabase-auth.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

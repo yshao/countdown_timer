@@ -1,0 +1,21 @@
+# Vercel Deployment Ignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.log
+.git
+.gitignore
+*.md
+test_*.py
+*.ipynb
+venv/
+env/
+.vscode/
+.idea/
+timer_app.db
+backend/timer_app.db
+backend/__pycache__
+.pytest_cache

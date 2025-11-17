@@ -9,6 +9,9 @@ class TimerApp {
         this.speechSynth = window.speechSynthesis;
         this.voiceEnabled = true;
 
+        // Audio context for alarm sound
+        this.audioContext = null;
+
         // DOM Elements
         this.hoursInput = document.getElementById('hours');
         this.minutesInput = document.getElementById('minutes');
@@ -192,6 +195,9 @@ class TimerApp {
 
         // Flash the display
         this.timerDisplay.classList.add('danger');
+
+        // Play gentle alarm sound for 2 seconds
+        this.playAlarm();
     }
 
     /**
@@ -295,6 +301,44 @@ class TimerApp {
 
         // Speak
         this.speechSynth.speak(utterance);
+    }
+
+    /**
+     * Play a gentle alarm sound for 2 seconds using Web Audio API
+     */
+    playAlarm() {
+        try {
+            // Create audio context if it doesn't exist
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const ctx = this.audioContext;
+            const now = ctx.currentTime;
+
+            // Create oscillator for the tone
+            const oscillator = ctx.createOscillator();
+            oscillator.type = 'sine'; // Gentle sine wave
+            oscillator.frequency.setValueAtTime(880, now); // A5 note - pleasant frequency
+
+            // Create gain node for volume control
+            const gainNode = ctx.createGain();
+            gainNode.gain.setValueAtTime(0, now); // Start silent
+            gainNode.gain.linearRampToValueAtTime(0.15, now + 0.1); // Fade in to gentle volume
+            gainNode.gain.setValueAtTime(0.15, now + 1.7); // Hold for most of duration
+            gainNode.gain.linearRampToValueAtTime(0, now + 2.0); // Fade out at the end
+
+            // Connect nodes
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            // Play for 2 seconds
+            oscillator.start(now);
+            oscillator.stop(now + 2.0);
+        } catch (error) {
+            // Silently fail if Web Audio API is not supported
+            console.warn('Could not play alarm sound:', error);
+        }
     }
 }
 

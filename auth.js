@@ -3,7 +3,10 @@
  * Handles user login, registration, logout, and token management
  */
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// Use relative URL for production (Vercel) and localhost for development
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : '/api';
 
 class AuthManager {
     constructor() {

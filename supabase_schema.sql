@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS ai_generated_content (
     admin_id UUID REFERENCES admin_users(id) ON DELETE SET NULL,
     prompt TEXT NOT NULL,
     generated_content TEXT NOT NULL,
-    model TEXT DEFAULT 'claude-sonnet-4-5',
+    model TEXT DEFAULT 'gemini-2.0-flash-exp',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     metadata JSONB DEFAULT '{}'::jsonb
 );

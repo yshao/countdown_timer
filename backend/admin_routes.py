@@ -9,7 +9,7 @@ import hashlib
 import secrets
 from datetime import datetime, timedelta
 from functools import wraps
-import anthropic
+import google.generativeai as genai
 from supabase import create_client, Client
 
 admin_bp = Blueprint('admin', __name__)
@@ -25,11 +25,16 @@ if supabase_url and supabase_key:
     except Exception as e:
         print(f"Failed to initialize Supabase: {e}")
 
-# Initialize Anthropic client
-anthropic_client = None
-anthropic_api_key = os.getenv('ANTHROPIC_API_KEY', '')
-if anthropic_api_key:
-    anthropic_client = anthropic.Anthropic(api_key=anthropic_api_key)
+# Initialize Google Gemini client
+gemini_client = None
+google_api_key = os.getenv('GOOGLE_API_KEY', '')
+if google_api_key:
+    try:
+        genai.configure(api_key=google_api_key)
+        gemini_client = genai.GenerativeModel('gemini-2.0-flash-exp')
+        print("✓ Google Gemini API initialized")
+    except Exception as e:
+        print(f"Failed to initialize Gemini: {e}")
 
 
 def hash_password(password: str) -> str:
@@ -246,24 +251,36 @@ def generate_content():
     if not data or not data.get('prompt'):
         return jsonify({'error': 'Prompt is required'}), 400
 
-    if not anthropic_client:
-        return jsonify({'error': 'AI service not configured'}), 500
+    if not gemini_client:
+        return jsonify({'error': 'AI service not configured. Please set GOOGLE_API_KEY in .env'}), 500
 
     prompt = data['prompt']
-    model = data.get('model', 'claude-sonnet-4-5')
+    model_name = data.get('model', 'gemini-2.0-flash-exp')
     max_tokens = data.get('max_tokens', 2000)
 
     try:
-        # Generate content using Claude
-        message = anthropic_client.messages.create(
-            model="claude-sonnet-4-20250514",  # Latest Sonnet model
-            max_tokens=max_tokens,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
+        # Select the appropriate Gemini model
+        if model_name != gemini_client.model_name:
+            model = genai.GenerativeModel(model_name)
+        else:
+            model = gemini_client
+
+        # Configure generation settings
+        generation_config = {
+            'max_output_tokens': max_tokens,
+            'temperature': 0.7,
+        }
+
+        # Generate content using Gemini
+        response = model.generate_content(
+            prompt,
+            generation_config=generation_config
         )
 
-        generated_content = message.content[0].text
+        generated_content = response.text
+
+        # Calculate token usage (approximate)
+        token_count = len(generated_content.split())  # Rough estimate
 
         # Save to database
         if supabase:
@@ -272,9 +289,10 @@ def generate_content():
                     'admin_id': request.admin_id,
                     'prompt': prompt,
                     'generated_content': generated_content,
-                    'model': model,
+                    'model': model_name,
                     'metadata': {
-                        'tokens': message.usage.output_tokens if hasattr(message, 'usage') else 0
+                        'tokens': token_count,
+                        'model_version': model_name
                     }
                 }).execute()
             except Exception as e:
@@ -283,13 +301,14 @@ def generate_content():
         # Log activity
         log_activity(request.admin_id, 'ai_generate', {
             'prompt_length': len(prompt),
-            'response_length': len(generated_content)
+            'response_length': len(generated_content),
+            'model': model_name
         })
 
         return jsonify({
             'success': True,
             'content': generated_content,
-            'model': model
+            'model': model_name
         }), 200
 
     except Exception as e:

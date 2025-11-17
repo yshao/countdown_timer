@@ -345,7 +345,7 @@ class AdminApp {
                         </div>
                         <div class="history-meta">
                             <span>🕐 ${formattedDate}</span>
-                            <span>🤖 ${item.model || 'Claude'}</span>
+                            <span>🤖 ${item.model || 'Gemini'}</span>
                         </div>
                     </div>
                     <div class="history-actions">

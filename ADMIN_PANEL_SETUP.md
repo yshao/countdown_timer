@@ -13,7 +13,7 @@ This guide will help you set up the admin panel with Supabase authentication and
 ## 📋 Prerequisites
 
 1. **Supabase Account** - Get your credentials from [supabase.com](https://supabase.com)
-2. **Anthropic API Key** - Get your API key from [console.anthropic.com](https://console.anthropic.com)
+2. **Google AI API Key** - Get your API key from [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
 3. **Python 3.8+** installed
 4. **PostgreSQL** (via Supabase)
 
@@ -41,8 +41,8 @@ Edit the `.env` file with your actual credentials:
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-role-key-here
 
-# Anthropic API for AI Writing
-ANTHROPIC_API_KEY=your-anthropic-api-key-here
+# Google Gemini API for AI Writing
+GOOGLE_API_KEY=your-google-api-key-here
 
 # Flask Configuration (change in production!)
 SECRET_KEY=your-super-secret-key-change-this
@@ -98,9 +98,9 @@ http://localhost:8000/admin.html
 ## 🎨 Features
 
 ### 1. **AI Content Generation**
-- Generate high-quality content using Claude AI
-- Choose from different models (Sonnet, Opus, Haiku)
-- Adjust max tokens for content length
+- Generate high-quality content using Google Gemini 2.0 Flash
+- Choose from different Gemini models (2.0 Flash, 1.5 Pro, 1.5 Flash)
+- Adjust max tokens for content length (up to 8000 tokens)
 - Copy or download generated content
 - Full generation history
 
@@ -183,14 +183,14 @@ VALUES ('newadmin@example.com', 'YOUR_PASSWORD_HASH_HERE', 'New Admin Name', tru
 
 ### Changing AI Models
 
-Edit `admin.html` to add more model options:
+Edit `admin.html` to add more Gemini model options:
 
 ```html
 <select id="ai-model">
-    <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
-    <option value="claude-opus-3">Claude Opus 3</option>
-    <option value="claude-haiku-3">Claude Haiku 3</option>
-    <!-- Add more models here -->
+    <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Recommended)</option>
+    <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+    <!-- Add more Gemini models here -->
 </select>
 ```
 
@@ -213,8 +213,9 @@ Edit `admin-styles.css` to change colors, fonts, and layout:
 - Verify Supabase credentials are correct
 
 ### "AI service not configured"
-- Check that `ANTHROPIC_API_KEY` is set in `.env`
-- Verify your Anthropic API key is valid and has credits
+- Check that `GOOGLE_API_KEY` is set in `.env`
+- Verify your Google API key is valid
+- Get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
 
 ### "Invalid credentials"
 - Verify the admin user exists in the `admin_users` table
@@ -273,7 +274,7 @@ curl -X POST http://localhost:5000/api/admin/ai/generate \
 Set these in your hosting platform:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_KEY`
-- `ANTHROPIC_API_KEY`
+- `GOOGLE_API_KEY`
 - `SECRET_KEY` (generate a strong random key)
 - `JWT_SECRET_KEY` (generate a strong random key)
 - `FLASK_ENV=production`
@@ -299,7 +300,8 @@ Set these in your hosting platform:
 ## 📚 Additional Resources
 
 - [Supabase Documentation](https://supabase.com/docs)
-- [Anthropic API Documentation](https://docs.anthropic.com)
+- [Google Gemini API Documentation](https://ai.google.dev/docs)
+- [Google AI Studio](https://aistudio.google.com)
 - [Flask Documentation](https://flask.palletsprojects.com)
 - [JWT Best Practices](https://tools.ietf.org/html/rfc8725)
 

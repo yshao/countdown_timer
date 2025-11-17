@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from models import Database, User, UserPreferences, UserPresets
 from stripe_routes import stripe_bp
 from supabase_auth import supabase_auth_bp
+from admin_routes import admin_bp
 
 # Load environment variables
 load_dotenv()
@@ -40,6 +41,7 @@ presets_model = UserPresets(db)
 # Register blueprints
 app.register_blueprint(stripe_bp, url_prefix='/api/stripe')
 app.register_blueprint(supabase_auth_bp, url_prefix='/api/auth')
+app.register_blueprint(admin_bp, url_prefix='/api/admin')
 
 # Token blacklist for logout functionality
 token_blacklist = set()

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - AI Writing & Management</title>
+    <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🔐 Admin Panel</h1>
+                <p>Sign in to access the admin dashboard</p>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="Enter your password">
+                </div>
+                <div id="login-error" class="error-message"></div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            <div class="login-footer">
+                <p><small>Default credentials: admin@example.com / Admin123!</small></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" class="dashboard-container" style="display: none;">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1>🎛️ Admin Dashboard</h1>
+                <div class="header-actions">
+                    <span class="admin-info">
+                        <strong id="admin-name"></strong>
+                        (<span id="admin-email"></span>)
+                    </span>
+                    <button class="btn btn-logout" onclick="adminApp.logout()">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Navigation Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="ai-writing">
+                    ✍️ AI Writing
+                </button>
+                <button class="tab-btn" data-tab="history">
+                    📚 History
+                </button>
+                <button class="tab-btn" data-tab="activity">
+                    📊 Activity Log
+                </button>
+                <button class="tab-btn" data-tab="settings">
+                    ⚙️ Settings
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content active" id="ai-writing">
+                <div class="content-card">
+                    <h2>AI Content Generation</h2>
+                    <p class="subtitle">Use Claude AI to generate high-quality content</p>
+
+                    <div class="ai-generator">
+                        <div class="form-group">
+                            <label for="ai-prompt">Prompt</label>
+                            <textarea
+                                id="ai-prompt"
+                                rows="6"
+                                placeholder="Enter your prompt here... For example: 'Write a blog post about the benefits of countdown timers for productivity'"
+                            ></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ai-model">Model</label>
+                                <select id="ai-model">
+                                    <option value="claude-sonnet-4-5">Claude Sonnet 4.5 (Recommended)</option>
+                                    <option value="claude-opus-3">Claude Opus 3</option>
+                                    <option value="claude-haiku-3">Claude Haiku 3 (Fast)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ai-max-tokens">Max Tokens</label>
+                                <input type="number" id="ai-max-tokens" value="2000" min="100" max="4000" step="100">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-large" onclick="adminApp.generateContent()">
+                            ✨ Generate Content
+                        </button>
+
+                        <div id="generation-loading" class="loading-spinner" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Generating content with AI...</p>
+                        </div>
+
+                        <div id="generated-content" class="generated-output" style="display: none;">
+                            <div class="output-header">
+                                <h3>Generated Content</h3>
+                                <div class="output-actions">
+                                    <button class="btn btn-sm" onclick="adminApp.copyContent()">📋 Copy</button>
+                                    <button class="btn btn-sm" onclick="adminApp.downloadContent()">💾 Download</button>
+                                </div>
+                            </div>
+                            <div id="content-output" class="content-output"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="history">
+                <div class="content-card">
+                    <h2>Generation History</h2>
+                    <p class="subtitle">View your previous AI generations</p>
+
+                    <div id="history-loading" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading history...</p>
+                    </div>
+
+                    <div id="history-list" class="history-list" style="display: none;"></div>
+
+                    <div id="history-empty" class="empty-state" style="display: none;">
+                        <p>📭 No generation history yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="activity">
+                <div class="content-card">
+                    <h2>Activity Log</h2>
+                    <p class="subtitle">Track your admin actions</p>
+
+                    <div id="activity-loading" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading activity...</p>
+                    </div>
+
+                    <div id="activity-list" class="activity-list" style="display: none;"></div>
+
+                    <div id="activity-empty" class="empty-state" style="display: none;">
+                        <p>📭 No activity recorded yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="settings">
+                <div class="content-card">
+                    <h2>Settings</h2>
+                    <p class="subtitle">Manage your admin account and preferences</p>
+
+                    <div class="settings-section">
+                        <h3>Account Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Email:</label>
+                                <span id="settings-email"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Full Name:</label>
+                                <span id="settings-name"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Last Login:</label>
+                                <span id="settings-last-login"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>API Configuration</h3>
+                        <p class="info-message">
+                            ℹ️ API keys are configured in your backend .env file
+                        </p>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Supabase:</label>
+                                <span id="supabase-status">✓ Connected</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Anthropic API:</label>
+                                <span id="anthropic-status">✓ Connected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Database Schema</h3>
+                        <p>Run the SQL schema file to set up your Supabase database:</p>
+                        <pre class="code-block">psql -h your-db-host -U postgres -d your-database -f supabase_schema.sql</pre>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Status Toast -->
+        <div id="status-toast" class="status-toast"></div>
+    </div>
+
+    <script src="admin-app.js"></script>
+</body>
+</html>

@@ -12,6 +12,7 @@ import os
 from dotenv import load_dotenv
 
 from models import Database, User, UserPreferences, UserPresets
+from stripe_routes import stripe_bp
 
 # Load environment variables
 load_dotenv()
@@ -34,6 +35,9 @@ db = Database(db_path)
 user_model = User(db)
 preferences_model = UserPreferences(db)
 presets_model = UserPresets(db)
+
+# Register Stripe routes blueprint
+app.register_blueprint(stripe_bp, url_prefix='/api/stripe')
 
 # Token blacklist for logout functionality
 token_blacklist = set()

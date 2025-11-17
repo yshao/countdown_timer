@@ -562,3 +562,203 @@ body {
 .container {
     margin-top: 30px;
 }
+/* Subscription Badge */
+.subscription-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-right: 10px;
+    text-transform: uppercase;
+}
+
+.subscription-badge.free {
+    background: #e0e0e0;
+    color: #666;
+}
+
+.subscription-badge.pro {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.subscription-badge.premium {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+/* Pricing Modal */
+.pricing-modal {
+    max-width: 1000px !important;
+    width: 95% !important;
+}
+
+.modal-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+}
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.pricing-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 30px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.pricing-card.featured {
+    border-color: #667eea;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+}
+
+.plan-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 20px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.plan-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.plan-header h3 {
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+}
+
+.price .amount {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.price .period {
+    font-size: 1em;
+    color: #666;
+}
+
+.features-list {
+    list-style: none;
+    margin: 25px 0;
+    min-height: 200px;
+}
+
+.features-list li {
+    padding: 12px 0;
+    color: #555;
+    font-size: 0.95em;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.features-list li:last-child {
+    border-bottom: none;
+}
+
+.pricing-card .btn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.btn-outline {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.btn-outline:hover {
+    background: #667eea;
+    color: white;
+}
+
+.btn-outline:disabled,
+.btn-outline.current-plan {
+    background: #e0e0e0;
+    color: #999;
+    border-color: #e0e0e0;
+    cursor: not-allowed;
+}
+
+.pricing-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    color: #666;
+}
+
+.pricing-footer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.pricing-footer a:hover {
+    text-decoration: underline;
+}
+
+.modal-footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+}
+
+.modal-footer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.modal-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive Design for Pricing */
+@media (max-width: 768px) {
+    .pricing-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pricing-modal {
+        padding: 20px;
+    }
+
+    .plan-header h3 {
+        font-size: 1.5em;
+    }
+
+    .price .amount {
+        font-size: 2em;
+    }
+}

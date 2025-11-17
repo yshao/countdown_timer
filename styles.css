@@ -762,3 +762,23 @@ body {
         font-size: 2em;
     }
 }
+
+/* Footer */
+.app-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 10px 0;
+    text-align: center;
+    z-index: 100;
+}
+
+.app-footer p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85em;
+    font-weight: 500;
+}

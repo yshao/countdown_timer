@@ -1,6 +1,6 @@
 /**
  * Supabase Authentication Module
- * Handles user authentication, registration, and session management
+ * Handles user authentication, registration, and session management with enhanced security
  */
 
 class SupabaseAuthManager {
@@ -8,7 +8,7 @@ class SupabaseAuthManager {
         this.supabase = null;
         this.user = null;
         this.session = null;
-        this.subscription = null;
+        this.sessionCheckInterval = null;
         this.init();
     }
 
@@ -21,7 +21,14 @@ class SupabaseAuthManager {
             const { createClient } = supabase;
             this.supabase = createClient(
                 window.CONFIG.supabase.url,
-                window.CONFIG.supabase.anonKey
+                window.CONFIG.supabase.anonKey,
+                {
+                    auth: {
+                        autoRefreshToken: true,
+                        persistSession: true,
+                        detectSessionInUrl: true
+                    }
+                }
             );
 
             // Listen for auth state changes
@@ -31,11 +38,17 @@ class SupabaseAuthManager {
                 this.user = session?.user || null;
 
                 if (session?.user) {
-                    // Load user subscription data
-                    await this.loadSubscription();
-                    this.updateUI(true);
+                    // Verify session with backend for added security
+                    const isValid = await this.verifySessionWithBackend(session.access_token);
+                    if (isValid) {
+                        this.startSessionMonitoring();
+                        this.updateUI(true);
+                    } else {
+                        console.warn('Session verification failed, logging out');
+                        await this.logout();
+                    }
                 } else {
-                    this.subscription = null;
+                    this.stopSessionMonitoring();
                     this.updateUI(false);
                 }
             });
@@ -45,8 +58,13 @@ class SupabaseAuthManager {
             if (session) {
                 this.session = session;
                 this.user = session.user;
-                await this.loadSubscription();
-                this.updateUI(true);
+                const isValid = await this.verifySessionWithBackend(session.access_token);
+                if (isValid) {
+                    this.startSessionMonitoring();
+                    this.updateUI(true);
+                } else {
+                    await this.logout();
+                }
             }
         } catch (error) {
             console.error('Supabase initialization error:', error);
@@ -55,35 +73,61 @@ class SupabaseAuthManager {
     }
 
     /**
-     * Load user subscription data from database
+     * Verify session with backend server for additional security
+     * This provides server-side validation beyond just client-side checks
      */
-    async loadSubscription() {
-        if (!this.user) return;
-
+    async verifySessionWithBackend(accessToken) {
         try {
-            const { data, error } = await this.supabase
-                .from('subscriptions')
-                .select('*')
-                .eq('user_id', this.user.id)
-                .single();
+            const response = await fetch('/api/auth/verify-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    userId: this.user?.id
+                })
+            });
 
-            if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-                console.error('Error loading subscription:', error);
-                return;
+            if (response.ok) {
+                const data = await response.json();
+                return data.valid === true;
             }
-
-            this.subscription = data || {
-                user_id: this.user.id,
-                plan: 'free',
-                status: 'active'
-            };
-
-            // Update UI with subscription info
-            if (window.subscriptionManager) {
-                window.subscriptionManager.updateSubscriptionUI(this.subscription);
-            }
+            return false;
         } catch (error) {
-            console.error('Error loading subscription:', error);
+            console.error('Session verification error:', error);
+            // If backend is not available, allow local auth (dev mode)
+            return true;
+        }
+    }
+
+    /**
+     * Start monitoring session validity
+     * Periodically checks if the session is still valid
+     */
+    startSessionMonitoring() {
+        // Clear any existing interval
+        this.stopSessionMonitoring();
+
+        // Check session validity every 5 minutes
+        this.sessionCheckInterval = setInterval(async () => {
+            if (this.session) {
+                const { data: { session }, error } = await this.supabase.auth.getSession();
+                if (error || !session) {
+                    console.warn('Session expired or invalid');
+                    await this.logout();
+                }
+            }
+        }, 5 * 60 * 1000); // 5 minutes
+    }
+
+    /**
+     * Stop session monitoring
+     */
+    stopSessionMonitoring() {
+        if (this.sessionCheckInterval) {
+            clearInterval(this.sessionCheckInterval);
+            this.sessionCheckInterval = null;
         }
     }
 
@@ -111,22 +155,37 @@ class SupabaseAuthManager {
     closeModals() {
         document.getElementById('login-modal').style.display = 'none';
         document.getElementById('register-modal').style.display = 'none';
-        const pricingModal = document.getElementById('pricing-modal');
-        if (pricingModal) {
-            pricingModal.style.display = 'none';
-        }
     }
 
     /**
-     * Handle registration
+     * Handle registration with enhanced security
      */
     async handleRegister(event) {
         event.preventDefault();
 
-        const email = document.getElementById('register-email').value;
+        const email = document.getElementById('register-email').value.trim();
         const password = document.getElementById('register-password').value;
-        const username = document.getElementById('register-username').value;
+        const username = document.getElementById('register-username').value.trim();
         const errorEl = document.getElementById('register-error');
+
+        // Client-side validation
+        if (!this.validateEmail(email)) {
+            errorEl.textContent = 'Please enter a valid email address';
+            errorEl.classList.add('show');
+            return;
+        }
+
+        if (password.length < 8) {
+            errorEl.textContent = 'Password must be at least 8 characters long';
+            errorEl.classList.add('show');
+            return;
+        }
+
+        if (!this.validateUsername(username)) {
+            errorEl.textContent = 'Username must be 3-20 characters and contain only letters, numbers, and underscores';
+            errorEl.classList.add('show');
+            return;
+        }
 
         try {
             // Register with Supabase Auth
@@ -135,8 +194,10 @@ class SupabaseAuthManager {
                 password: password,
                 options: {
                     data: {
-                        username: username
-                    }
+                        username: username,
+                        display_name: username
+                    },
+                    emailRedirectTo: window.location.origin
                 }
             });
 
@@ -147,9 +208,6 @@ class SupabaseAuthManager {
             }
 
             if (data.user) {
-                // Create subscription record with free plan
-                await this.createSubscriptionRecord(data.user.id);
-
                 // Show success message
                 if (window.app) {
                     window.app.showStatus('Registration successful! Please check your email to verify your account.', 'success');
@@ -165,14 +223,21 @@ class SupabaseAuthManager {
     }
 
     /**
-     * Handle login
+     * Handle login with enhanced security
      */
     async handleLogin(event) {
         event.preventDefault();
 
-        const email = document.getElementById('login-email').value;
+        const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value;
         const errorEl = document.getElementById('login-error');
+
+        // Client-side validation
+        if (!this.validateEmail(email)) {
+            errorEl.textContent = 'Please enter a valid email address';
+            errorEl.classList.add('show');
+            return;
+        }
 
         try {
             const { data, error } = await this.supabase.auth.signInWithPassword({
@@ -206,6 +271,8 @@ class SupabaseAuthManager {
      */
     async logout() {
         try {
+            this.stopSessionMonitoring();
+
             const { error } = await this.supabase.auth.signOut();
             if (error) throw error;
 
@@ -219,28 +286,6 @@ class SupabaseAuthManager {
     }
 
     /**
-     * Create initial subscription record for new user
-     */
-    async createSubscriptionRecord(userId) {
-        try {
-            const { error } = await this.supabase
-                .from('subscriptions')
-                .insert({
-                    user_id: userId,
-                    plan: 'free',
-                    status: 'active',
-                    created_at: new Date().toISOString()
-                });
-
-            if (error) {
-                console.error('Error creating subscription record:', error);
-            }
-        } catch (error) {
-            console.error('Error creating subscription record:', error);
-        }
-    }
-
-    /**
      * Update UI based on auth state
      */
     updateUI(isLoggedIn) {
@@ -249,24 +294,13 @@ class SupabaseAuthManager {
             document.getElementById('auth-logged-in').style.display = 'flex';
 
             // Display username or email
-            const username = this.user.user_metadata?.username || this.user.email;
+            const username = this.user.user_metadata?.username ||
+                           this.user.user_metadata?.display_name ||
+                           this.user.email?.split('@')[0];
             document.getElementById('username-display').textContent = username;
-
-            // Show subscription info
-            const subscriptionEl = document.getElementById('subscription-info');
-            if (subscriptionEl && this.subscription) {
-                const plan = window.CONFIG.plans[this.subscription.plan];
-                subscriptionEl.textContent = `${plan.name} Plan`;
-                subscriptionEl.style.display = 'inline';
-            }
         } else {
             document.getElementById('auth-logged-out').style.display = 'flex';
             document.getElementById('auth-logged-in').style.display = 'none';
-
-            const subscriptionEl = document.getElementById('subscription-info');
-            if (subscriptionEl) {
-                subscriptionEl.style.display = 'none';
-            }
         }
     }
 
@@ -294,27 +328,26 @@ class SupabaseAuthManager {
     }
 
     /**
-     * Get current subscription
+     * Get current session token for API requests
      */
-    getSubscription() {
-        return this.subscription;
+    getSessionToken() {
+        return this.session?.access_token || null;
     }
 
     /**
-     * Check if user has access to a feature
+     * Validate email format
      */
-    hasFeatureAccess(feature) {
-        if (!this.subscription) return false;
+    validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
 
-        const plan = window.CONFIG.plans[this.subscription.plan];
-        if (!plan) return false;
-
-        // Check specific limits
-        if (feature.maxPresets !== undefined) {
-            return plan.limits.maxPresets === -1 || feature.maxPresets <= plan.limits.maxPresets;
-        }
-
-        return true;
+    /**
+     * Validate username format
+     */
+    validateUsername(username) {
+        const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+        return usernameRegex.test(username);
     }
 }
 
@@ -325,15 +358,11 @@ const auth = new SupabaseAuthManager();
 window.onclick = function(event) {
     const loginModal = document.getElementById('login-modal');
     const registerModal = document.getElementById('register-modal');
-    const pricingModal = document.getElementById('pricing-modal');
 
     if (event.target === loginModal) {
         auth.closeModals();
     }
     if (event.target === registerModal) {
-        auth.closeModals();
-    }
-    if (event.target === pricingModal) {
         auth.closeModals();
     }
 };

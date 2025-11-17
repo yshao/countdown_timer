@@ -8,9 +8,6 @@
 
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Stripe -->
-    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <!-- Authentication Header -->
@@ -27,9 +24,7 @@
                 </div>
                 <!-- Show when logged in -->
                 <div id="auth-logged-in" class="auth-section" style="display: none;">
-                    <span id="subscription-info" class="subscription-badge" style="display: none;"></span>
                     <span class="user-welcome">Welcome, <strong id="username-display"></strong>!</span>
-                    <button class="btn-header btn-secondary" onclick="subscriptionManager.showPricingModal()">Upgrade</button>
                     <button class="btn-header btn-logout" onclick="auth.logout()">Logout</button>
                 </div>
             </div>
@@ -137,7 +132,6 @@
         <div class="modal-content">
             <span class="close" onclick="auth.closeModals()">&times;</span>
             <h2>Create Your Account</h2>
-            <p class="modal-subtitle">Start with a free plan, upgrade anytime!</p>
             <form id="register-form" onsubmit="auth.handleRegister(event)">
                 <div class="form-group">
                     <label for="register-username">Username</label>
@@ -160,92 +154,9 @@
         </div>
     </div>
 
-    <!-- Pricing Modal -->
-    <div id="pricing-modal" class="modal">
-        <div class="modal-content pricing-modal">
-            <span class="close" onclick="auth.closeModals()">&times;</span>
-            <h2>Choose Your Plan</h2>
-            <p class="modal-subtitle">Select the perfect plan for your needs</p>
-
-            <div class="pricing-grid">
-                <!-- Free Plan -->
-                <div class="pricing-card">
-                    <div class="plan-header">
-                        <h3>Free</h3>
-                        <div class="price">
-                            <span class="amount">$0</span>
-                            <span class="period">/month</span>
-                        </div>
-                    </div>
-                    <ul class="features-list">
-                        <li>✓ Basic countdown timer</li>
-                        <li>✓ Voice announcements</li>
-                        <li>✓ 3 saved presets</li>
-                        <li>✓ Up to 1 hour timer</li>
-                        <li>✓ Standard support</li>
-                    </ul>
-                    <button class="btn btn-outline" data-plan="free" onclick="subscriptionManager.createCheckoutSession('free')">
-                        Current Plan
-                    </button>
-                </div>
-
-                <!-- Pro Plan -->
-                <div class="pricing-card featured">
-                    <div class="plan-badge">Most Popular</div>
-                    <div class="plan-header">
-                        <h3>Pro</h3>
-                        <div class="price">
-                            <span class="amount">$9.99</span>
-                            <span class="period">/month</span>
-                        </div>
-                    </div>
-                    <ul class="features-list">
-                        <li>✓ Everything in Free</li>
-                        <li>✓ Unlimited saved presets</li>
-                        <li>✓ No time limits</li>
-                        <li>✓ Advanced controls</li>
-                        <li>✓ Priority support</li>
-                        <li>✓ Custom themes</li>
-                    </ul>
-                    <button class="btn btn-primary" data-plan="pro" onclick="subscriptionManager.createCheckoutSession('pro')">
-                        Upgrade to Pro
-                    </button>
-                </div>
-
-                <!-- Premium Plan -->
-                <div class="pricing-card">
-                    <div class="plan-header">
-                        <h3>Premium</h3>
-                        <div class="price">
-                            <span class="amount">$19.99</span>
-                            <span class="period">/month</span>
-                        </div>
-                    </div>
-                    <ul class="features-list">
-                        <li>✓ Everything in Pro</li>
-                        <li>✓ Team collaboration (10 users)</li>
-                        <li>✓ API access</li>
-                        <li>✓ Advanced analytics</li>
-                        <li>✓ White-label option</li>
-                        <li>✓ Dedicated support</li>
-                    </ul>
-                    <button class="btn btn-primary" data-plan="premium" onclick="subscriptionManager.createCheckoutSession('premium')">
-                        Upgrade to Premium
-                    </button>
-                </div>
-            </div>
-
-            <div class="pricing-footer">
-                <p>All plans include a 14-day free trial. Cancel anytime.</p>
-                <p><a href="#" onclick="subscriptionManager.openCustomerPortal(); return false;">Manage your subscription</a></p>
-            </div>
-        </div>
-    </div>
-
     <script src="config.js"></script>
     <script src="timer.js"></script>
     <script src="supabase-auth.js"></script>
-    <script src="stripe-integration.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

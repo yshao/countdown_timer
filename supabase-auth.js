@@ -208,9 +208,17 @@ class SupabaseAuthManager {
             }
 
             if (data.user) {
+                // Check if email confirmation is required
+                const needsConfirmation = !data.session;
+
                 // Show success message
                 if (window.app) {
-                    window.app.showStatus('Registration successful! Please check your email to verify your account.', 'success');
+                    if (needsConfirmation) {
+                        window.app.showStatus('Registration successful! Please check your email to verify your account.', 'success');
+                    } else {
+                        // Auto-confirmed - user is logged in immediately
+                        window.app.showStatus('Registration successful! Welcome to Timer App!', 'success');
+                    }
                 }
 
                 this.closeModals();

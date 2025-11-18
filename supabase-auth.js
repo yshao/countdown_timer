@@ -32,7 +32,13 @@ class SupabaseAuthManager {
     async init() {
         try {
             // Wait for configuration to load
-            await this.waitForConfig();
+            const configLoaded = await this.waitForConfig();
+
+            // Check if config loaded successfully
+            if (!configLoaded || !window.CONFIG || !window.CONFIG.supabase) {
+                console.warn('Supabase configuration not available. Authentication will not be available.');
+                return;
+            }
 
             // Check if Supabase is configured
             if (!window.CONFIG.supabase.url || !window.CONFIG.supabase.anonKey) {

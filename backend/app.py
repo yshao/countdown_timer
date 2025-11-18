@@ -298,6 +298,21 @@ def delete_preset(preset_id):
 
 
 # =============================================================================
+# Configuration Endpoint
+# =============================================================================
+
+@app.route('/api/config', methods=['GET'])
+def get_config():
+    """Get public configuration for frontend (Supabase credentials)"""
+    return jsonify({
+        'supabase': {
+            'url': os.getenv('SUPABASE_URL', ''),
+            'anonKey': os.getenv('SUPABASE_ANON_KEY', '')
+        }
+    }), 200
+
+
+# =============================================================================
 # Health Check
 # =============================================================================
 

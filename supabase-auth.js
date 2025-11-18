@@ -13,10 +13,33 @@ class SupabaseAuthManager {
     }
 
     /**
+     * Wait for configuration to be loaded from backend
+     */
+    async waitForConfig(maxAttempts = 50, interval = 100) {
+        for (let i = 0; i < maxAttempts; i++) {
+            if (window.CONFIG && window.CONFIG.loaded) {
+                return true;
+            }
+            await new Promise(resolve => setTimeout(resolve, interval));
+        }
+        console.warn('Config loading timeout');
+        return false;
+    }
+
+    /**
      * Initialize Supabase client and auth state
      */
     async init() {
         try {
+            // Wait for configuration to load
+            await this.waitForConfig();
+
+            // Check if Supabase is configured
+            if (!window.CONFIG.supabase.url || !window.CONFIG.supabase.anonKey) {
+                console.warn('Supabase not configured. Authentication will not be available.');
+                return;
+            }
+
             // Initialize Supabase client
             const { createClient } = supabase;
             this.supabase = createClient(
@@ -168,6 +191,13 @@ class SupabaseAuthManager {
         const username = document.getElementById('register-username').value.trim();
         const errorEl = document.getElementById('register-error');
 
+        // Check if Supabase is initialized
+        if (!this.supabase) {
+            errorEl.textContent = 'Authentication service not available. Please try again later.';
+            errorEl.classList.add('show');
+            return;
+        }
+
         // Client-side validation
         if (!this.validateEmail(email)) {
             errorEl.textContent = 'Please enter a valid email address';
@@ -240,6 +270,13 @@ class SupabaseAuthManager {
         const password = document.getElementById('login-password').value;
         const errorEl = document.getElementById('login-error');
 
+        // Check if Supabase is initialized
+        if (!this.supabase) {
+            errorEl.textContent = 'Authentication service not available. Please try again later.';
+            errorEl.classList.add('show');
+            return;
+        }
+
         // Client-side validation
         if (!this.validateEmail(email)) {
             errorEl.textContent = 'Please enter a valid email address';
@@ -280,6 +317,11 @@ class SupabaseAuthManager {
     async logout() {
         try {
             this.stopSessionMonitoring();
+
+            if (!this.supabase) {
+                console.warn('Supabase not initialized');
+                return;
+            }
 
             const { error } = await this.supabase.auth.signOut();
             if (error) throw error;

@@ -450,6 +450,18 @@ h1 {
     color: white;
 }
 
+.btn-portfolio {
+    background: rgba(76, 175, 80, 0.8);
+    border-color: rgba(76, 175, 80, 1);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-portfolio:hover {
+    background: #4CAF50;
+    color: white;
+}
+
 /* ===========================================
    Modal Styles
    =========================================== */

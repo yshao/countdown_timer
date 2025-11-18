@@ -11,7 +11,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
-from models import Database, User, UserPreferences, UserPresets
+from models import Database, User, UserPreferences, UserPresets, MemberPortfolio
 from stripe_routes import stripe_bp
 from supabase_auth import supabase_auth_bp
 from admin_routes import admin_bp
@@ -37,6 +37,7 @@ db = Database(db_path)
 user_model = User(db)
 preferences_model = UserPreferences(db)
 presets_model = UserPresets(db)
+portfolio_model = MemberPortfolio(db)
 
 # Register blueprints
 app.register_blueprint(stripe_bp, url_prefix='/api/stripe')
@@ -295,6 +296,93 @@ def delete_preset(preset_id):
     presets_model.delete_preset(user_id, preset_id)
 
     return jsonify({'message': 'Preset deleted successfully'}), 200
+
+
+# =============================================================================
+# Member Portfolio Endpoints
+# =============================================================================
+
+@app.route('/api/portfolio', methods=['GET'])
+@jwt_required()
+def get_portfolio():
+    """Get current user's portfolio"""
+    user_id = get_jwt_identity()
+    portfolio = portfolio_model.get_portfolio(user_id)
+
+    if portfolio:
+        return jsonify({'portfolio': portfolio}), 200
+    else:
+        return jsonify({'portfolio': None}), 200
+
+
+@app.route('/api/portfolio', methods=['POST', 'PUT'])
+@jwt_required()
+def update_portfolio():
+    """Create or update user's portfolio"""
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'Request body is required'}), 400
+
+    description = data.get('description', '')
+    photo_url = data.get('photo_url', '')
+
+    portfolio = portfolio_model.create_or_update_portfolio(user_id, description, photo_url)
+
+    return jsonify({
+        'message': 'Portfolio updated successfully',
+        'portfolio': portfolio
+    }), 200
+
+
+@app.route('/api/portfolio/description', methods=['PUT'])
+@jwt_required()
+def update_portfolio_description():
+    """Update only the portfolio description"""
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    if not data or 'description' not in data:
+        return jsonify({'error': 'Description is required'}), 400
+
+    description = data['description']
+    portfolio = portfolio_model.update_description(user_id, description)
+
+    return jsonify({
+        'message': 'Description updated successfully',
+        'portfolio': portfolio
+    }), 200
+
+
+@app.route('/api/portfolio/photo', methods=['PUT'])
+@jwt_required()
+def update_portfolio_photo():
+    """Update only the portfolio photo URL"""
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    if not data or 'photo_url' not in data:
+        return jsonify({'error': 'Photo URL is required'}), 400
+
+    photo_url = data['photo_url']
+    portfolio = portfolio_model.update_photo(user_id, photo_url)
+
+    return jsonify({
+        'message': 'Photo updated successfully',
+        'portfolio': portfolio
+    }), 200
+
+
+@app.route('/api/portfolio', methods=['DELETE'])
+@jwt_required()
+def delete_portfolio():
+    """Delete user's portfolio"""
+    user_id = get_jwt_identity()
+
+    portfolio_model.delete_portfolio(user_id)
+
+    return jsonify({'message': 'Portfolio deleted successfully'}), 200
 
 
 # =============================================================================

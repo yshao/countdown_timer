@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio - Timer App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="portfolio-styles.css">
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Authentication Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h2 class="header-title"><a href="index.html" class="header-link">Timer App</a></h2>
+            </div>
+            <div class="header-right">
+                <!-- Show when logged out -->
+                <div id="auth-logged-out" class="auth-section">
+                    <a href="index.html" class="btn-header btn-login">Back to Timer</a>
+                </div>
+                <!-- Show when logged in -->
+                <div id="auth-logged-in" class="auth-section" style="display: none;">
+                    <span class="user-welcome">Welcome, <strong id="username-display"></strong>!</span>
+                    <a href="index.html" class="btn-header btn-secondary-header">Timer</a>
+                    <button class="btn-header btn-logout" onclick="portfolioAuth.logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>My Portfolio</h1>
+        <p class="subtitle">Customize your profile with a description and photo</p>
+
+        <!-- Login Required Message -->
+        <div id="login-required" class="login-required-message">
+            <h3>Login Required</h3>
+            <p>Please <a href="index.html">login</a> to view and edit your portfolio.</p>
+        </div>
+
+        <!-- Portfolio Content (shown when logged in) -->
+        <div id="portfolio-content" style="display: none;">
+            <!-- Portfolio Preview -->
+            <div class="portfolio-preview">
+                <div class="portfolio-photo-container">
+                    <img id="portfolio-photo-preview" src="" alt="Profile Photo" class="portfolio-photo">
+                    <div id="photo-placeholder" class="photo-placeholder">
+                        <span>No Photo</span>
+                    </div>
+                </div>
+                <div class="portfolio-description-preview">
+                    <h3 id="preview-username">Username</h3>
+                    <p id="portfolio-description-text">No description yet. Add one below!</p>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="portfolio-edit-section">
+                <h3>Edit Your Portfolio</h3>
+
+                <!-- Photo Upload -->
+                <div class="form-group">
+                    <label for="photo-url">Photo URL</label>
+                    <input type="url" id="photo-url" placeholder="https://example.com/your-photo.jpg" class="form-input">
+                    <small>Enter a URL to your profile photo (e.g., from an image hosting service)</small>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="description">About Me</label>
+                    <textarea id="description" rows="5" placeholder="Tell us about yourself..." class="form-textarea"></textarea>
+                    <small>Share your interests, background, or anything you'd like others to know</small>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="portfolio-actions">
+                    <button id="save-portfolio-btn" class="btn btn-primary" onclick="portfolio.savePortfolio()">
+                        Save Changes
+                    </button>
+                    <button id="clear-portfolio-btn" class="btn btn-warning" onclick="portfolio.clearPortfolio()">
+                        Clear Portfolio
+                    </button>
+                </div>
+
+                <!-- Status Message -->
+                <div id="portfolio-status" class="status-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>Version 1.0.0</p>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="portfolio.js"></script>
+</body>
+</html>

@@ -65,6 +65,19 @@ class Database:
             )
         ''')
 
+        # Member portfolios table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS member_portfolios (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER UNIQUE NOT NULL,
+                description TEXT,
+                photo_url TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+            )
+        ''')
+
         conn.commit()
         conn.close()
 
@@ -239,3 +252,89 @@ class UserPresets:
             WHERE id = ? AND user_id = ?
         '''
         self.db.execute_query(query, (name, hours, minutes, seconds, preset_id, user_id))
+
+
+class MemberPortfolio:
+    """Member portfolio model"""
+
+    def __init__(self, db: Database):
+        self.db = db
+
+    def get_portfolio(self, user_id: int) -> Optional[Dict]:
+        """Get portfolio for a user"""
+        query = '''
+            SELECT id, user_id, description, photo_url, created_at, updated_at
+            FROM member_portfolios WHERE user_id = ?
+        '''
+        results = self.db.execute_query(query, (user_id,))
+
+        if results:
+            return dict(results[0])
+        return None
+
+    def create_or_update_portfolio(self, user_id: int, description: str = None, photo_url: str = None) -> Dict:
+        """Create or update a portfolio for a user"""
+        existing = self.get_portfolio(user_id)
+
+        if existing:
+            # Update existing portfolio
+            query = '''
+                UPDATE member_portfolios
+                SET description = ?, photo_url = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?
+            '''
+            self.db.execute_query(query, (description, photo_url, user_id))
+        else:
+            # Create new portfolio
+            query = '''
+                INSERT INTO member_portfolios (user_id, description, photo_url)
+                VALUES (?, ?, ?)
+            '''
+            self.db.execute_insert(query, (user_id, description, photo_url))
+
+        return self.get_portfolio(user_id)
+
+    def update_description(self, user_id: int, description: str) -> Optional[Dict]:
+        """Update only the description"""
+        existing = self.get_portfolio(user_id)
+
+        if existing:
+            query = '''
+                UPDATE member_portfolios
+                SET description = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?
+            '''
+            self.db.execute_query(query, (description, user_id))
+        else:
+            query = '''
+                INSERT INTO member_portfolios (user_id, description)
+                VALUES (?, ?)
+            '''
+            self.db.execute_insert(query, (user_id, description))
+
+        return self.get_portfolio(user_id)
+
+    def update_photo(self, user_id: int, photo_url: str) -> Optional[Dict]:
+        """Update only the photo URL"""
+        existing = self.get_portfolio(user_id)
+
+        if existing:
+            query = '''
+                UPDATE member_portfolios
+                SET photo_url = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE user_id = ?
+            '''
+            self.db.execute_query(query, (photo_url, user_id))
+        else:
+            query = '''
+                INSERT INTO member_portfolios (user_id, photo_url)
+                VALUES (?, ?)
+            '''
+            self.db.execute_insert(query, (user_id, photo_url))
+
+        return self.get_portfolio(user_id)
+
+    def delete_portfolio(self, user_id: int):
+        """Delete a user's portfolio"""
+        query = 'DELETE FROM member_portfolios WHERE user_id = ?'
+        self.db.execute_query(query, (user_id,))

@@ -9,6 +9,7 @@ class SupabaseAuthManager {
         this.user = null;
         this.session = null;
         this.sessionCheckInterval = null;
+        this.configError = null;
         this.init();
     }
 
@@ -32,11 +33,18 @@ class SupabaseAuthManager {
     async init() {
         try {
             // Wait for configuration to load
-            await this.waitForConfig();
+            const configLoaded = await this.waitForConfig();
+
+            if (!configLoaded) {
+                console.error('Failed to load configuration from backend');
+                this.configError = 'Unable to connect to the server. Please check your connection and try again.';
+                return;
+            }
 
             // Check if Supabase is configured
             if (!window.CONFIG.supabase.url || !window.CONFIG.supabase.anonKey) {
                 console.warn('Supabase not configured. Authentication will not be available.');
+                this.configError = 'Authentication is not configured. Please contact the administrator to set up Supabase credentials.';
                 return;
             }
 
@@ -193,7 +201,7 @@ class SupabaseAuthManager {
 
         // Check if Supabase is initialized
         if (!this.supabase) {
-            errorEl.textContent = 'Authentication service not available. Please try again later.';
+            errorEl.textContent = this.configError || 'Authentication service not available. Please try again later.';
             errorEl.classList.add('show');
             return;
         }
@@ -272,7 +280,7 @@ class SupabaseAuthManager {
 
         // Check if Supabase is initialized
         if (!this.supabase) {
-            errorEl.textContent = 'Authentication service not available. Please try again later.';
+            errorEl.textContent = this.configError || 'Authentication service not available. Please try again later.';
             errorEl.classList.add('show');
             return;
         }
